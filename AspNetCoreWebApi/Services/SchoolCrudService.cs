@@ -78,5 +78,31 @@ namespace AspNetCoreWebApi.Services
             // it will automatically append the INSERTED ID value, because your school object is still tracked.
             return school.SchoolId;
         }
+
+        /// <summary>
+        /// Update the school data based on the given school ID argument and the new school data.
+        /// </summary>
+        /// <param name="schoolId"></param>
+        /// <param name="newSchoolData"></param>
+        /// <returns>Return true if success, otherwise return false if the school data was not found in the database.</returns>
+        public async Task<bool> UpdateAsync(int schoolId, UpdateSchoolFormModel newSchoolData)
+        {
+            // No AsNoTracking() here since we want to track the queried entities and use it for the update reference.
+            var existingSchool = await _db.Schools
+                .Where(Q => Q.SchoolId == schoolId)
+                .FirstOrDefaultAsync();
+
+            if (existingSchool == null)
+            {
+                return false;
+            }
+
+            existingSchool.Name = newSchoolData.Name!;
+            existingSchool.EstablishedAt = newSchoolData.EstablishedAt;
+
+            await _db.SaveChangesAsync();
+
+            return true;
+        }
     }
 }

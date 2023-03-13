@@ -41,6 +41,25 @@ namespace AspNetCoreWebApi.Controllers
             return Ok(newId);
         }
 
+        [HttpPut("{schoolId}")]
+        public async Task<ActionResult> Update([FromRoute] int schoolId, UpdateSchoolFormModel newSchoolData)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var updateResult = await _schoolCrudService.UpdateAsync(schoolId, newSchoolData);
+
+            if (!updateResult)
+            {
+                ModelState.AddModelError("schoolId", "The school data was not found.");
+                return ValidationProblem(ModelState);
+            }
+
+            return Ok($"School ID {schoolId} has been successfully updated.");
+        }
+
         [Obsolete("Raw query version.")]
         [HttpGet("raw")]
         public ActionResult GetObsolete()
