@@ -104,5 +104,29 @@ namespace AspNetCoreWebApi.Services
 
             return true;
         }
+
+        /// <summary>
+        /// Delete the school data based on the given school ID argument.
+        /// </summary>
+        /// <param name="schoolId"></param>
+        /// <returns>Return true if success, otherwise return false if the school data was not found in the database.</returns>
+        public async Task<bool> DeleteAsync(int schoolId)
+        {
+            // No AsNoTracking() here since we want to track the queried entities and use it for the update reference.
+            var existingSchool = await _db.Schools
+                .Where(Q => Q.SchoolId == schoolId)
+                .FirstOrDefaultAsync();
+
+            if (existingSchool == null)
+            {
+                return false;
+            }
+
+            _db.Schools.Remove(existingSchool);
+
+            await _db.SaveChangesAsync();
+
+            return true;
+        }
     }
 }

@@ -1,9 +1,6 @@
 ﻿using AspNetCoreWebApi.Models;
 using AspNetCoreWebApi.Services;
-using AspNetCoreWebApi.Sql.Entities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
 namespace AspNetCoreWebApi.Controllers
@@ -49,15 +46,29 @@ namespace AspNetCoreWebApi.Controllers
                 return ValidationProblem(ModelState);
             }
 
-            var updateResult = await _schoolCrudService.UpdateAsync(schoolId, newSchoolData);
+            var isSuccess = await _schoolCrudService.UpdateAsync(schoolId, newSchoolData);
 
-            if (!updateResult)
+            if (!isSuccess)
             {
                 ModelState.AddModelError("schoolId", "The school data was not found.");
                 return ValidationProblem(ModelState);
             }
 
             return Ok($"School ID {schoolId} has been successfully updated.");
+        }
+
+        [HttpDelete("{schoolId}")]
+        public async Task<ActionResult> Delete([FromRoute] int schoolId)
+        {
+            var isSuccess = await _schoolCrudService.DeleteAsync(schoolId);
+
+            if (!isSuccess)
+            {
+                ModelState.AddModelError("schoolId", "The school data was not found.");
+                return ValidationProblem(ModelState);
+            }
+
+            return Ok($"School ID {schoolId} has been successfully deleted.");
         }
 
         [Obsolete("Raw query version.")]
