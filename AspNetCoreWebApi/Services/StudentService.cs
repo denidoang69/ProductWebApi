@@ -22,7 +22,7 @@ namespace AspNetCoreWebApi.Services
         /// <param name="schoolName"></param>
         /// <param name="page"></param>
         /// <returns></returns>
-        public async Task<List<StudentViewModel>> GetStudents(string? schoolName, int page)
+        public async Task<StudentViewModel> GetStudents(string? schoolName, int page)
         {
             var query = from sc in _db.Schools
                         join st in _db.Students on sc.SchoolId equals st.SchoolId
@@ -34,6 +34,10 @@ namespace AspNetCoreWebApi.Services
                 query = query.Where(Q => Q.sc.Name.ToUpper().StartsWith(schoolNameText));
             }
 
+            // We can reuse the query object to get total data based on the constructed query clauses on above codes.
+            // Do not execute this after pagination queries.
+            var totalData = await query.CountAsync();
+
             var itemPerPage = 5;
 
             if (page >= 1)
@@ -41,15 +45,18 @@ namespace AspNetCoreWebApi.Services
                 page -= 1;
             }
 
+
             query = query
-            // Skip based on page X itemPerPage, example: 1 page X 3 itemPerPage, so you will skip 3 items and retrieve the next 3 items on the next page.
+                // Don't forget to include ORDER BY clause whenever you want to implement an offset pagination.
+                .OrderByDescending(Q => Q.st.StudentId)
+                // Skip based on page X itemPerPage, example: 1 page X 3 itemPerPage, so you will skip 3 items and retrieve the next 3 items on the next page.
                 .Skip(page * itemPerPage)
                 // Take the whole items on the next page, example: 3 itemPerPage, then users will retrieve 3 itemPerPage
                 .Take(itemPerPage);
 
             var students = await query
                 .AsNoTracking()
-                .Select(Q => new StudentViewModel
+                .Select(Q => new StudentListItemModel
                 {
                     StudentId = Q.st.StudentId,
                     StudentName = Q.st.FullName,
@@ -60,7 +67,11 @@ namespace AspNetCoreWebApi.Services
                 })
                 .ToListAsync();
 
-            return students;
+            return new StudentViewModel
+            {
+                Students = students,
+                TotalData = totalData
+            };
         }
     }
 }
