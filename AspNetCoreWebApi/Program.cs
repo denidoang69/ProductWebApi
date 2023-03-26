@@ -19,6 +19,7 @@ builder.Services.AddTransient<ProductCrudService>();
 builder.Services.AddTransient<TestService>();
 builder.Services.AddTransient<SchoolCrudService>();
 builder.Services.AddTransient<StudentService>();
+builder.Services.AddTransient<LearningClassService>();
 
 // Set as singleton to provide static data.
 builder.Services.AddSingleton<ProductData>();
